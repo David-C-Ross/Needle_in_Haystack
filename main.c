@@ -8,12 +8,12 @@
 
 
 int main(int argc,char * argv[]) {
-    uint8_t n = 16, memory = 4;
+    uint8_t n = 20, memory = 5;
 
     mpz_t prob;
-    mpz_init_set_ui(prob, 10);
+    mpz_init_set_ui(prob, 15);
 
-    //mode_detection(n, memory, prob);
+    //pcs_mode_detection(n, memory, prob);
     rho_mode_detection(n, prob);
 
     /*

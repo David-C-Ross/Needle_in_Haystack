@@ -111,7 +111,7 @@ int check_needle(mpz_t collision, mpz_t inverse_prob) {
     return retval;
 }
 
-void mode_detection(uint8_t n, uint8_t memory_init, mpz_t prob) {
+void pcs_mode_detection(uint8_t n, uint8_t memory_init, mpz_t prob) {
     nb_bits = n;
     memory = memory_init;
     int M = pow(2, memory);
@@ -122,7 +122,7 @@ void mode_detection(uint8_t n, uint8_t memory_init, mpz_t prob) {
     int trail_length_max = pow(2, trailling_bits) * 20;
 
     hashUNIX_t ** inner_table;
-    hashUNIX_t ** outer_table = struct_init_hash(nb_bits, memory);
+    hashUNIX_t ** outer_table;
 
     mpz_t start1, start2, collision, distCollision, inverse_prob;
     mpz_inits(start1, start2, collision, distCollision, inverse_prob, flavor, offset, NULL);
@@ -132,12 +132,11 @@ void mode_detection(uint8_t n, uint8_t memory_init, mpz_t prob) {
     gmp_randseed_ui(r_state, time(NULL));
 
     do {
+        outer_table = struct_init_hash(nb_bits, memory);
         // create random flavor
         mpz_urandomb(flavor, r_state, nb_bits);
-
         // create random offset
         mpz_urandomb(offset, r_state, nb_bits);
-
         // find M collisions which are also distinguished points
         for (int i = 0; i < M; ++i) {
             mpz_urandomb(start1, r_state, nb_bits);
@@ -157,6 +156,7 @@ void mode_detection(uint8_t n, uint8_t memory_init, mpz_t prob) {
                     trail_length1 = 0;
 
                     clear_table(inner_table);
+                    inner_table = pcs_init(nb_bits, memory, trailling_bits, flavor, prob);
                 }
 
             } while (!is_distinguished(collision));
@@ -173,6 +173,7 @@ void mode_detection(uint8_t n, uint8_t memory_init, mpz_t prob) {
             }
             clear_table(inner_table);
         }
+        clear_table(outer_table);
         printf("________________________________ \n");
     }
     while (1);
@@ -181,6 +182,7 @@ void mode_detection(uint8_t n, uint8_t memory_init, mpz_t prob) {
     mpz_clears(start1, start2, collision, distCollision, inverse_prob, flavor, offset, NULL);
     gmp_randclear(r_state);
 
+    clear_table(inner_table);
     clear_table(outer_table);
     pcs_clear();
 }
@@ -201,9 +203,9 @@ void rho_mode_detection(uint8_t n, mpz_t prob) {
 
     do {
         mpz_urandomb(start, r_state, nb_bits);
-        mpz_urandomb(flavor, r_state, nb_bits);
         // create random offset
         mpz_urandomb(offset, r_state, nb_bits);
+        get_next(start, flavor);
 
         rho(start, tortoise);
         get_next(tortoise, flavor);
@@ -264,6 +266,7 @@ void rho(mpz_t start_point, mpz_t collision) {
         f(hare);
     }
     mpz_set(collision, tortoise);
+    //printf("collision!, %lu \n", mpz_get_ui(collision));
 
     mpz_clears(tortoise, hare, NULL);
 }
