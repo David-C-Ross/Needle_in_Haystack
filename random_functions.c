@@ -1,11 +1,9 @@
-#include <fcntl.h>
-#include <unistd.h>
 #include <stdlib.h> /* exit */
-#include <stdio.h> /* printf */
 #include <inttypes.h>
 #include <gmp.h>
+#include <time.h>
 
-uint8_t nb_bits;
+static uint8_t nb_bits;
 static mpz_t flavor;
 static mpz_t threshold;
 

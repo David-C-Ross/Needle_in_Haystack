@@ -91,12 +91,12 @@ void find_collision(mpz_t distCollision, mpz_t a1, mpz_t a2, int length1, int le
  *  @return 	1 if one of the points is the needle, 0 otherwise.
  **/
 int check_needle(mpz_t collision, mpz_t inverse_prob) {
-    int retval = 0, counter = 0, threshold = 4;
+    int retval = 0, counter = 0, threshold = 3;
 
     mpz_t x;
     mpz_init(x);
 
-    for (int i = 0; i < 4 * mpz_get_ui(inverse_prob); ++i) {
+    for (int i = 0; i < mpz_get_ui(inverse_prob); ++i) {
         mpz_urandomb(x, r_state, nb_bits);
         f(x);
         if (mpz_cmp(collision, x) == 0) {

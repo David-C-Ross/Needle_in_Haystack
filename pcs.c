@@ -158,13 +158,16 @@ int pcs_run(hashUNIX_t **table, mpz_t start_point, int nb_collisions, mpz_t *col
 }
 
 void init_seed(mpz_t seed_init) {
-    gmp_randseed(r_state1, seed_init);
+    unsigned long int seed;
+    srand((mpz_get_ui(seed_init)));
+    seed = rand();
+    gmp_randseed_ui(r_state1, seed);
 }
 
 void get_current_rstate(mpz_t seed, int counter) {
     mpz_t temp;
     mpz_init(temp);
-    gmp_randseed(r_state1, seed);
+    init_seed(seed);
 
     for (int i = 0; i < counter; ++i) {
         mpz_urandomb(temp, r_state1, nb_bits);
