@@ -19,8 +19,8 @@ static mpz_t threshold;
 static gmp_randstate_t r_state;
 
 uint8_t trailling_bits_init() {
-    uint8_t bits = nb_bits + memory;
-    return nb_bits - (uint8_t) floor(bits / 2);
+    uint8_t bits = nb_bits - memory;
+    return bits / 2;
 }
 
 void get_next(mpz_t point, mpz_t next) {
@@ -47,8 +47,8 @@ void find_collision(mpz_t distCollision, mpz_t a1, mpz_t a2, int length1, int le
     mpz_set(b1, a1);
     mpz_set(b2, a2);
 
-    hashUNIX_t **inner_table1 = pcs_init(nb_bits, memory, trailling_bits, flavor, prob);
-    hashUNIX_t **inner_table2 = pcs_init(nb_bits, memory, trailling_bits, flavor, prob);
+    Table_t *inner_table1 = struct_init(nb_bits, memory);
+    Table_t *inner_table2 = struct_init(nb_bits, memory);
 
     if (length1 > length2) {
         init_seed(a1);
@@ -91,7 +91,7 @@ void find_collision(mpz_t distCollision, mpz_t a1, mpz_t a2, int length1, int le
  *  @return 	1 if one of the points is the needle, 0 otherwise.
  **/
 int check_needle(mpz_t collision, mpz_t inverse_prob) {
-    int retval = 0, counter = 0, threshold = 3;
+    int retval = 0, counter = 0;
 
     mpz_t x;
     mpz_init(x);
@@ -103,7 +103,7 @@ int check_needle(mpz_t collision, mpz_t inverse_prob) {
             counter++;
         }
     }
-    if (counter >= threshold) {
+    if (counter >= 3) {
         printf("%lu is the needle!", mpz_get_ui(collision));
         retval =  1;
     }
@@ -121,8 +121,8 @@ void pcs_mode_detection(uint8_t n, uint8_t memory_init, mpz_t prob) {
     int trail_length1, trail_length2;
     int trail_length_max = pow(2, trailling_bits) * 20;
 
-    hashUNIX_t ** inner_table;
-    hashUNIX_t ** outer_table;
+    Table_t *inner_table;
+    Table_t *outer_table;
 
     mpz_t start1, start2, collision, distCollision, inverse_prob;
     mpz_inits(start1, start2, collision, distCollision, inverse_prob, flavor, offset, NULL);
@@ -138,10 +138,12 @@ void pcs_mode_detection(uint8_t n, uint8_t memory_init, mpz_t prob) {
         // create random offset
         mpz_urandomb(offset, r_state, nb_bits);
         // find M collisions which are also distinguished points
+
+        pcs_init(nb_bits, memory, trailling_bits, flavor, prob);
         for (int i = 0; i < M; ++i) {
             mpz_urandomb(start1, r_state, nb_bits);
 
-            inner_table = pcs_init(nb_bits, memory, trailling_bits, flavor, prob);
+            inner_table = struct_init(nb_bits, memory);
             init_seed(start1);
 
             trail_length1 = 0;
@@ -150,18 +152,21 @@ void pcs_mode_detection(uint8_t n, uint8_t memory_init, mpz_t prob) {
                 get_next(collision, start1);
                 trail_length1++;
 
+                //printf("collision found!, %lu \n", mpz_get_ui(collision));
+
                 if (trail_length1 > trail_length_max) {
                     mpz_urandomb(start1, r_state, nb_bits);
                     init_seed(start1);
                     trail_length1 = 0;
 
                     clear_table(inner_table);
-                    inner_table = pcs_init(nb_bits, memory, trailling_bits, flavor, prob);
+                    inner_table = struct_init(nb_bits, memory);
                 }
 
             } while (!is_distinguished(collision));
 
-            //printf("%d collision found!, %lu \n", i + 1, mpz_get_ui(collision));
+            //printf("%d: collision found!, %lu \n", i + 1, mpz_get_ui(collision));
+            clear_table(inner_table);
 
             trail_length2 = struct_add(outer_table, start2, start1, collision, trail_length1, xDist_str);
             if (trail_length2) {
@@ -171,7 +176,6 @@ void pcs_mode_detection(uint8_t n, uint8_t memory_init, mpz_t prob) {
                     goto end;
                 }
             }
-            clear_table(inner_table);
         }
         clear_table(outer_table);
         printf("________________________________ \n");
@@ -182,7 +186,6 @@ void pcs_mode_detection(uint8_t n, uint8_t memory_init, mpz_t prob) {
     mpz_clears(start1, start2, collision, distCollision, inverse_prob, flavor, offset, NULL);
     gmp_randclear(r_state);
 
-    clear_table(inner_table);
     clear_table(outer_table);
     pcs_clear();
 }
@@ -190,8 +193,8 @@ void pcs_mode_detection(uint8_t n, uint8_t memory_init, mpz_t prob) {
 void rho_mode_detection(uint8_t n, mpz_t prob) {
     nb_bits = n;
 
-    mpz_t start, tortoise, hare, inverse_prob;
-    mpz_inits(start, tortoise, hare, inverse_prob, flavor, offset, threshold, NULL);
+    mpz_t start, collision, inverse_prob;
+    mpz_inits(start, collision, inverse_prob, flavor, offset, threshold, NULL);
     mpz_ui_pow_ui(inverse_prob, 2, mpz_get_ui(prob));
 
     // Threshold is used to create our needle - can be removed if different function (f) is used.
@@ -205,39 +208,48 @@ void rho_mode_detection(uint8_t n, mpz_t prob) {
         mpz_urandomb(start, r_state, nb_bits);
         // create random offset
         mpz_urandomb(offset, r_state, nb_bits);
-        get_next(start, flavor);
 
-        rho(start, tortoise);
-        get_next(tortoise, flavor);
+        nested_rho(start, collision);
 
-        rho(tortoise, hare);
-
-        while (mpz_cmp(tortoise, hare) != 0) {
-            get_next(tortoise, flavor);
-            rho(tortoise, tortoise);
-
-            get_next(hare, flavor);
-            rho(hare, hare);
-            get_next(hare, flavor);
-            rho(hare, hare);
-        }
-
-        mpz_set(tortoise, start);
-        while (mpz_cmp(tortoise, hare) != 0) {
-            get_next(tortoise, flavor);
-            rho(tortoise, tortoise);
-
-            get_next(hare, flavor);
-            rho(hare, hare);
-        }
-
-        printf("collision found!, %lu \n", mpz_get_ui(tortoise));
+        printf("collision found!, %lu \n", mpz_get_ui(collision));
         printf("________________________________ \n");
     }
-    while (!check_needle(tortoise, inverse_prob));
+    while (!check_needle(collision, inverse_prob));
 
-    mpz_clears(start, tortoise, hare, inverse_prob, flavor, offset, threshold, NULL);
+    mpz_clears(start, collision, inverse_prob, flavor, offset, threshold, NULL);
     gmp_randclear(r_state);
+}
+
+void nested_rho(mpz_t start_point, mpz_t collision) {
+    mpz_t tortoise, hare;
+    mpz_inits(tortoise, hare, NULL);
+
+    get_next(start_point, flavor);
+    rho(start_point, tortoise);
+
+    get_next(tortoise, flavor);
+    rho(tortoise, hare);
+
+    while (mpz_cmp(tortoise, hare) != 0) {
+        get_next(tortoise, flavor);
+        rho(tortoise, tortoise);
+
+        get_next(hare, flavor);
+        rho(hare, hare);
+        get_next(hare, flavor);
+        rho(hare, hare);
+    }
+
+    mpz_set(tortoise, start_point);
+    while (mpz_cmp(tortoise, hare) != 0) {
+        get_next(tortoise, flavor);
+        rho(tortoise, tortoise);
+
+        get_next(hare, flavor);
+        rho(hare, hare);
+    }
+    mpz_set(collision, tortoise);
+    mpz_clears(tortoise, hare, NULL);
 }
 
 void rho(mpz_t start_point, mpz_t collision) {

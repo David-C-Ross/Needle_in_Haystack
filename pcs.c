@@ -10,7 +10,7 @@
 
 static uint8_t nb_bits;
 static uint8_t trailling_bits;
-static gmp_randstate_t r_state1;
+static gmp_randstate_t r_state;
 static int r_state_counter;
 
 /** Determines whether a point is a distinguished one.
@@ -41,7 +41,7 @@ int get_distinguished(mpz_t point, mpz_t dist) {
         trail_length++;
 
         if (trail_length > trail_length_max) {
-            mpz_urandomb(point, r_state1, nb_bits);
+            mpz_urandomb(point, r_state, nb_bits);
             r_state_counter++;
 
             mpz_set(x, point);
@@ -101,7 +101,7 @@ int is_collision(mpz_t collision, mpz_t a1, mpz_t a2, int length1, int length2) 
 /** Initialize all variables needed to do a PCS algorithm.
  *
  */
-hashUNIX_t ** pcs_init(uint8_t n_init, uint8_t memory_init, uint8_t trailling_bits_init, mpz_t flavor_init, mpz_t prob) {
+void pcs_init(uint8_t n_init, uint8_t memory_init, uint8_t trailling_bits_init, mpz_t flavor_init, mpz_t prob) {
     nb_bits = n_init;
     trailling_bits = trailling_bits_init;
 
@@ -114,15 +114,13 @@ hashUNIX_t ** pcs_init(uint8_t n_init, uint8_t memory_init, uint8_t trailling_bi
     init_f(nb_bits, flavor_init, threshold);
     mpz_clear(threshold);
 
-    gmp_randinit_default(r_state1);
-
-    return struct_init(nb_bits, memory_init);
+    gmp_randinit_default(r_state);
 }
 
 /** Run the PCS algorithm.
  *
  */
-int pcs_run(hashUNIX_t **table, mpz_t start_point, int nb_collisions, mpz_t *collisions) {
+int pcs_run(Table_t *table, mpz_t start_point, int nb_collisions, mpz_t *collisions) {
     mpz_t a, a2;
     mpz_t dist, collision;
     char xDist_str[50];
@@ -150,7 +148,7 @@ int pcs_run(hashUNIX_t **table, mpz_t start_point, int nb_collisions, mpz_t *col
                 //printf("start point 2, %lu \n", mpz_get_ui(a2));
             }
         }
-        mpz_urandomb(a, r_state1, nb_bits);
+        mpz_urandomb(a, r_state, nb_bits);
         r_state_counter++;
     }
     mpz_clears(a, a2, collision, dist, NULL);
@@ -161,7 +159,7 @@ void init_seed(mpz_t seed_init) {
     unsigned long int seed;
     srand((mpz_get_ui(seed_init)));
     seed = rand();
-    gmp_randseed_ui(r_state1, seed);
+    gmp_randseed_ui(r_state, seed);
 }
 
 void get_current_rstate(mpz_t seed, int counter) {
@@ -170,7 +168,7 @@ void get_current_rstate(mpz_t seed, int counter) {
     init_seed(seed);
 
     for (int i = 0; i < counter; ++i) {
-        mpz_urandomb(temp, r_state1, nb_bits);
+        mpz_urandomb(temp, r_state, nb_bits);
     }
     mpz_clear(temp);
 }
@@ -179,9 +177,9 @@ void get_current_rstate(mpz_t seed, int counter) {
  *
  */
 void pcs_clear() {
-    gmp_randclear(r_state1);
+    gmp_randclear(r_state);
 }
 
-void clear_table(hashUNIX_t **table) {
+void clear_table(Table_t *table) {
     struct_free(table);
 }

@@ -7,14 +7,20 @@
 typedef struct hashUNIX
 {
     char *key;
-    char *a_;
+    char *start;
     int length;
-    struct hashUNIX *next;
 
 }hashUNIX_t;
 
-hashUNIX_t ** struct_init_hash(uint8_t n, uint8_t memory);
-int struct_add_hash(hashUNIX_t **table, mpz_t a_out, mpz_t a_in, int length, char xDist[]);
-void struct_free_hash(hashUNIX_t **table);
+typedef struct Table
+{
+    hashUNIX_t ** array;
+    unsigned int memory_alloc;
+
+}Table_t;
+
+Table_t *struct_init_hash(uint8_t n, uint8_t memory);
+int struct_add_hash(Table_t *table, mpz_t a_out, mpz_t a_in, int length, char xDist[]);
+void struct_free_hash(Table_t *table);
 
 #endif
