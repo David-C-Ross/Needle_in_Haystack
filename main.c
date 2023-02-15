@@ -2,7 +2,8 @@
 #include "stdio.h"
 #include <inttypes.h>
 #include <time.h>
-#include "needle.h"
+#include "needle_pcs.h"
+#include "needle_rho.h"
 #include "pcs_storage.h"
 #include "pcs.h"
 
@@ -13,7 +14,7 @@ int main(int argc,char * argv[]) {
     mpz_t prob;
     mpz_init_set_ui(prob, 17);
 
-    //pcs_mode_detection(n, memory, prob);
+    pcs_mode_detection(n, memory, prob);
     //rho_mode_detection(n, prob);
 
     /*
@@ -33,7 +34,6 @@ int main(int argc,char * argv[]) {
     for (int i = 0; i <nb_collisions; ++i) {
         printf("%d: %lu \n", i, mpz_get_ui(collisions[i]));
     }
-
     clear_table(inner_table);
     pcs_clear();
 

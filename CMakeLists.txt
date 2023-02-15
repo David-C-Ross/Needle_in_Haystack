@@ -3,7 +3,7 @@ project(PCS C)
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(PCS main.c pcs_struct_hash.c pcs_struct_hash.h pcs_storage.h pcs_storage.c pcs.h pcs.c needle.h needle.c random_functions.h random_functions.c)
+add_executable(PCS main.c pcs_struct_hash.c pcs_struct_hash.h pcs_storage.h pcs_storage.c pcs.h pcs.c needle_pcs.h needle_pcs.c random_functions.h random_functions.c needle_rho.c needle_rho.h)
 
 find_library(MATH_LIBRARY m)
 if(MATH_LIBRARY)

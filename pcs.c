@@ -16,7 +16,7 @@ static int r_state_counter;
 /** Determines whether a point is a distinguished one.
  *
  *  @param[in]	point				A point.
- *  @param[in]	trailling_bits  Number of trailling zero bits.
+ *  @param[in]	trailling_bits  Number of trailing zero bits.
  *  @return 	1 if the point is distinguished, 0 otherwise.
  */
 int is_distinguished(mpz_t point) {
@@ -136,7 +136,7 @@ int pcs_run(Table_t *table, mpz_t start_point, int nb_collisions, mpz_t *collisi
     while (collision_count < nb_collisions) {
         trail_length1 = get_distinguished(a, dist);
 
-        //mpz_fdiv_q_2exp(dist, dist, trailling_bits);
+        //mpz_fdiv_q_2exp(dist, dist, trailing_bits);
         trail_length2 = struct_add(table, a2, a, dist, trail_length1, xDist_str);
         if (trail_length2) {
             if (is_collision(collision, a, a2, trail_length1, trail_length2)) {

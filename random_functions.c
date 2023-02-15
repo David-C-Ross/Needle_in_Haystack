@@ -18,6 +18,22 @@ uint32_t jenkins( uint32_t a)
     return a;
 }
 
+void get_next(mpz_t point, mpz_t offset, mpz_t next) {
+    /*
+    mpz_t temp;
+    mpz_init(temp);
+
+    mpz_xor(temp, point, offset);
+    srand(mpz_get_ui(temp));
+    mpz_set_ui(temp, rand());
+    mpz_mod_2exp(next, temp, nb_bits);
+
+    mpz_clear(temp);
+     */
+    mpz_xor(next, point, offset);
+}
+
+
 /** Evaluate the function f at a given point.
  *
  * 	@param[in]	point	    Current point.
