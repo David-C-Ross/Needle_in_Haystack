@@ -31,7 +31,7 @@ int is_distinguished(mpz_t point) {
 
 int get_distinguished(mpz_t point, mpz_t dist) {
     int trail_length = 0;
-    int trail_length_max = pow(2, trailling_bits) * 20;
+    int trail_length_max = pow(2, trailling_bits) * 2;
     mpz_t x;
 
     mpz_init_set(x, point);

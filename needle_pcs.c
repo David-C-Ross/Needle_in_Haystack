@@ -109,9 +109,10 @@ void pcs_mode_detection(uint8_t n, uint8_t memory_init, mpz_t prob) {
     trailing_bits = trailing_bits_init();
     char xDist_str[50];
 
+    int counter = 0;
     int nb_collisions;
     int trail_length1, trail_length2;
-    int trail_length_max = pow(2, trailing_bits) * 20;
+    int trail_length_max = pow(2, trailing_bits) * 2;
 
     Table_t *inner_table;
     Table_t *outer_table;
@@ -167,8 +168,9 @@ void pcs_mode_detection(uint8_t n, uint8_t memory_init, mpz_t prob) {
 
             trail_length2 = struct_add(outer_table, start2, start1, collision, trail_length1, xDist_str);
             if (trail_length2) {
+                counter++;
                 find_collision(distCollision, start1, start2, trail_length1, trail_length2, prob);
-                printf("repeated collision!, %lu \n", mpz_get_ui(distCollision));
+                printf("%d: repeated collision!, %lu \n", counter, mpz_get_ui(distCollision));
                 mpz_set(collisions[nb_collisions], distCollision);
                 nb_collisions++;
             }

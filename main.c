@@ -2,20 +2,21 @@
 #include "stdio.h"
 #include <inttypes.h>
 #include <time.h>
+#include <math.h>
 #include "needle_pcs.h"
 #include "needle_rho.h"
 #include "pcs_storage.h"
 #include "pcs.h"
-
+#include "random_functions.h"
 
 int main(int argc,char * argv[]) {
-    uint8_t n = 20, memory = 5;
+    uint8_t n = 30, memory = 6;
 
     mpz_t prob;
-    mpz_init_set_ui(prob, 17);
+    mpz_init_set_ui(prob, 24); // the needle will appear 2^6=64 times, jenkins hash has been checked for 2^30 to not contain any other needles of similar magnitude.
 
-    pcs_mode_detection(n, memory, prob);
-    //rho_mode_detection(n, prob);
+    //pcs_mode_detection(n, memory, prob);
+    rho_mode_detection(n, prob);
 
     /*
     mpz_t flavor;

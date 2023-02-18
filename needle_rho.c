@@ -40,6 +40,7 @@ int check_needle(mpz_t collision, mpz_t inverse_prob) {
 
 void rho_mode_detection(uint8_t n, mpz_t prob) {
     nb_bits = n;
+    int counter = 0;
 
     mpz_t start, collision, inverse_prob;
     mpz_inits(start, collision, inverse_prob, flavor, offset, threshold, NULL);
@@ -53,13 +54,14 @@ void rho_mode_detection(uint8_t n, mpz_t prob) {
     gmp_randseed_ui(r_state, time(NULL));
 
     do {
+        counter++;
         mpz_urandomb(start, r_state, nb_bits);
         // create random offset
         mpz_urandomb(offset, r_state, nb_bits);
 
         nested_rho(start, collision);
 
-        printf("collision found!, %lu \n", mpz_get_ui(collision));
+        printf("%d: collision found!, %lu \n", counter, mpz_get_ui(collision));
         printf("________________________________ \n");
     }
     while (!check_needle(collision, inverse_prob));
