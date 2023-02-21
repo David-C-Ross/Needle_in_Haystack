@@ -10,8 +10,8 @@
 
 static uint8_t nb_bits;
 static uint8_t trailling_bits;
+static mpz_t flavor;
 static gmp_randstate_t r_state;
-static int r_state_counter;
 
 /** Determines whether a point is a distinguished one.
  *
@@ -31,18 +31,17 @@ int is_distinguished(mpz_t point) {
 
 int get_distinguished(mpz_t point, mpz_t dist) {
     int trail_length = 0;
-    int trail_length_max = pow(2, trailling_bits) * 2;
+    int trail_length_max = pow(2, trailling_bits) * 10;
     mpz_t x;
 
     mpz_init_set(x, point);
 
     while (!is_distinguished(x)) {
-        f(x);
+        f(x, flavor);
         trail_length++;
 
         if (trail_length > trail_length_max) {
             mpz_urandomb(point, r_state, nb_bits);
-            r_state_counter++;
 
             mpz_set(x, point);
             trail_length = 0;
@@ -72,11 +71,11 @@ int is_collision(mpz_t collision, mpz_t a1, mpz_t a2, int length1, int length2) 
     mpz_set(b2, a2);
 
     while (length1 > length2) {
-        f(b1);
+        f(b1, flavor);
         length1--;
     }
     while (length2 > length1) {
-        f(b2);
+        f(b2, flavor);
         length2--;
     }
     // checks for robin hood
@@ -85,8 +84,8 @@ int is_collision(mpz_t collision, mpz_t a1, mpz_t a2, int length1, int length2) 
             mpz_set(pre1, b1);
             mpz_set(pre2, b2);
 
-            f(b1);
-            f(b2);
+            f(b1, flavor);
+            f(b2, flavor);
 
         }
         mpz_set(collision, b1);
@@ -101,18 +100,12 @@ int is_collision(mpz_t collision, mpz_t a1, mpz_t a2, int length1, int length2) 
 /** Initialize all variables needed to do a PCS algorithm.
  *
  */
-void pcs_init(uint8_t n_init, uint8_t memory_init, uint8_t trailling_bits_init, mpz_t flavor_init, mpz_t prob) {
+void pcs_init(uint8_t n_init, uint8_t prob_init, uint8_t trailling_bits_init, mpz_t flavor_init) {
     nb_bits = n_init;
     trailling_bits = trailling_bits_init;
 
-    // Threshold is used to create our needle - can be removed if different function (f) is used.
-    mpz_t threshold;
-    mpz_init(threshold);
-    mpz_ui_sub(threshold, nb_bits, prob);
-    mpz_ui_pow_ui(threshold, 2, mpz_get_ui(threshold));
-
-    init_f(nb_bits, flavor_init, threshold);
-    mpz_clear(threshold);
+    init_f(nb_bits, prob_init);
+    mpz_init_set(flavor, flavor_init);
 
     gmp_randinit_default(r_state);
 }
@@ -120,12 +113,11 @@ void pcs_init(uint8_t n_init, uint8_t memory_init, uint8_t trailling_bits_init, 
 /** Run the PCS algorithm.
  *
  */
-int pcs_run(Table_t *table, mpz_t start_point, int nb_collisions, mpz_t *collisions) {
+void pcs_run(Table_t *table, mpz_t start_point, int nb_collisions, mpz_t *collisions) {
     mpz_t a, a2;
     mpz_t dist, collision;
     char xDist_str[50];
 
-    r_state_counter = 0;
     int trail_length1, trail_length2;
     int collision_count = 0;
 
@@ -149,34 +141,19 @@ int pcs_run(Table_t *table, mpz_t start_point, int nb_collisions, mpz_t *collisi
             }
         }
         mpz_urandomb(a, r_state, nb_bits);
-        r_state_counter++;
     }
     mpz_clears(a, a2, collision, dist, NULL);
-    return r_state_counter;
 }
 
 void init_seed(mpz_t seed_init) {
-    unsigned long int seed;
-    srand((mpz_get_ui(seed_init)));
-    seed = rand();
-    gmp_randseed_ui(r_state, seed);
-}
-
-void get_current_rstate(mpz_t seed, int counter) {
-    mpz_t temp;
-    mpz_init(temp);
-    init_seed(seed);
-
-    for (int i = 0; i < counter; ++i) {
-        mpz_urandomb(temp, r_state, nb_bits);
-    }
-    mpz_clear(temp);
+    gmp_randseed(r_state, seed_init);
 }
 
 /** Free all variables used in the previous PCS run.
  *
  */
 void pcs_clear() {
+    mpz_clear(flavor);
     gmp_randclear(r_state);
 }
 

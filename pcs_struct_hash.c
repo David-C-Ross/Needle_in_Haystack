@@ -72,6 +72,7 @@ int struct_add_hash(Table_t *table, mpz_t a_out, mpz_t a_in, int length, char xD
         free(table->array[i]->key);
         free(table->array[i]->start);
         free(table->array[i]);
+
         table->array[i] = new;
     }
     table->memory_alloc ++;

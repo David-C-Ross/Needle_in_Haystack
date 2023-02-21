@@ -10,39 +10,47 @@
 #include "random_functions.h"
 
 int main(int argc,char * argv[]) {
-    uint8_t n = 30, memory = 6;
-
-    mpz_t prob;
-    mpz_init_set_ui(prob, 24); // the needle will appear 2^6=64 times, jenkins hash has been checked for 2^30 to not contain any other needles of similar magnitude.
+    // the needle will appear 2^5=32 times, hash has been checked to not contain any other needles of similar magnitude.
+    uint8_t n = 24, memory = 6, prob = 18;
 
     //pcs_mode_detection(n, memory, prob);
     rho_mode_detection(n, prob);
+/*
+    mpz_t start, seed, inner_flavor;
+    mpz_inits(start, seed, inner_flavor, NULL);
 
-    /*
-    mpz_t flavor;
-    mpz_init(flavor);
+    int counter = 0;
+    int nb_collisions = 10000;
 
-    int nb_collisions = 200;
+    gmp_randstate_t r_state;
+    gmp_randinit_default(r_state);
+    gmp_randseed_ui(r_state, time(NULL));
+
+    mpz_urandomb(start, r_state, n);
+    mpz_urandomb(inner_flavor, r_state, n);
+
     mpz_t *collisions = malloc( sizeof(mpz_t) * nb_collisions);
-    for (int i = 0; i <nb_collisions; ++i) {
+    for (int i = 0; i < nb_collisions; ++i) {
         mpz_init(collisions[i]);
     }
     Table_t *inner_table = struct_init(n, memory);
-    pcs_init(n, memory, 6, flavor, prob);
-    mpz_set_ui(prob, time(NULL));
-    init_seed(prob);
-    pcs_run(inner_table,prob, nb_collisions, collisions);
+    pcs_init(n, prob, 9, inner_flavor);
+
+    mpz_set_ui(seed, time(NULL));
+    init_seed(seed);
+
+    pcs_run(inner_table, start, nb_collisions, collisions);
     for (int i = 0; i <nb_collisions; ++i) {
         printf("%d: %lu \n", i, mpz_get_ui(collisions[i]));
+        if (mpz_cmp_ui(collisions[i], 1) == 0) counter++;
     }
-    clear_table(inner_table);
-    pcs_clear();
+    printf("%d", counter);
+    //clear_table(inner_table);
+    //pcs_clear();
 
     free(collisions);
-    mpz_clear(flavor);
-     */
-
-    mpz_clear(prob);
+    mpz_clears(start, seed, inner_flavor, NULL);
+*/
 
     return 0;
 }

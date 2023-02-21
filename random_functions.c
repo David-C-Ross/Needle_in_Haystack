@@ -4,10 +4,10 @@
 #include <time.h>
 
 static uint8_t nb_bits;
-static mpz_t flavor;
-static mpz_t threshold;
+static uint8_t prob;
+static uint32_t table_size;
 
-uint32_t jenkins( uint32_t a)
+uint32_t jenkins(uint32_t a)
 {
     a = (a+0x7ed55d16) + (a<<12);
     a = (a^0xc761c23c) ^ (a>>19);
@@ -18,44 +18,46 @@ uint32_t jenkins( uint32_t a)
     return a;
 }
 
-void get_next(mpz_t point, mpz_t offset, mpz_t next) {
-    /*
-    mpz_t temp;
-    mpz_init(temp);
-
-    mpz_xor(temp, point, offset);
-    srand(mpz_get_ui(temp));
-    mpz_set_ui(temp, rand());
-    mpz_mod_2exp(next, temp, nb_bits);
-
-    mpz_clear(temp);
-     */
-    mpz_xor(next, point, offset);
+uint32_t hashint( uint32_t a)
+{
+    a += ~(a<<15);
+    a ^=  (a>>10);
+    a +=  (a<<3);
+    a ^=  (a>>6);
+    a += ~(a<<11);
+    a ^=  (a>>16);
+    return a;
 }
 
+void get_offset(mpz_t point, mpz_t offset, mpz_t next) {
+    mpz_xor(next, point, offset);
+}
 
 /** Evaluate the function f at a given point.
  *
  * 	@param[in]	point	    Current point.
  */
-void f(mpz_t point) {
+void f(mpz_t point, mpz_t flavor) {
     mpz_t temp;
-    mpz_init(temp);
-    mpz_xor(point, point, flavor);
+    get_offset(point, flavor, point);
 
-    if (mpz_cmp(point, threshold) < 0) {
+    uint32_t p = mpz_get_ui(point);
+    uint32_t j = jenkins(p);
+    uint32_t i = hashint(j);
+    mpz_init_set_ui(temp, j);
+
+    if (mpz_divisible_2exp_p(temp, prob)) {
         mpz_set_ui(point, 1);
     } else {
-        mpz_set_ui(temp, jenkins(mpz_get_ui(point)));
-        //srand(mpz_get_ui(point));
-        //mpz_set_ui(temp, rand());
-        mpz_mod_2exp(point, temp, nb_bits);
+        i = i & (table_size - 1);
+        mpz_set_ui(point, i);
+        //mpz_fdiv_r_2exp(point, temp, nb_bits);
     }
     mpz_clear(temp);
 }
 
-void init_f(uint8_t n_init, mpz_t flavor_init, mpz_t threshold_init) {
+void init_f(uint8_t n_init, uint8_t prob_init) {
     nb_bits = n_init;
-    mpz_init_set(flavor, flavor_init);
-    mpz_init_set(threshold, threshold_init);
+    prob = prob_init;
+    table_size = 1 << nb_bits;
 }
