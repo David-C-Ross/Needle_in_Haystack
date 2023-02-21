@@ -14,7 +14,7 @@ int main(int argc,char * argv[]) {
     uint8_t n = 24, memory = 6, prob = 18;
 
     //pcs_mode_detection(n, memory, prob);
-    rho_mode_detection(n, prob);
+    //rho_mode_detection(n, prob);
 /*
     mpz_t start, seed, inner_flavor;
     mpz_inits(start, seed, inner_flavor, NULL);
@@ -45,12 +45,11 @@ int main(int argc,char * argv[]) {
         if (mpz_cmp_ui(collisions[i], 1) == 0) counter++;
     }
     printf("%d", counter);
-    //clear_table(inner_table);
-    //pcs_clear();
+    clear_table(inner_table);
+    pcs_clear();
 
     free(collisions);
     mpz_clears(start, seed, inner_flavor, NULL);
 */
-
     return 0;
 }
