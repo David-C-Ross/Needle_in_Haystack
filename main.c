@@ -2,54 +2,56 @@
 #include "stdio.h"
 #include <inttypes.h>
 #include <time.h>
-#include <math.h>
 #include "needle_pcs.h"
 #include "needle_rho.h"
 #include "pcs_storage.h"
 #include "pcs.h"
 #include "random_functions.h"
 
-int main(int argc,char * argv[]) {
+int main() {
     // the needle will appear 2^5=32 times, hash has been checked to not contain any other needles of similar magnitude.
-    uint8_t n = 24, memory = 6, prob = 18;
+    uint8_t n = 26, memory = 5, prob = 20;
 
-    //pcs_mode_detection(n, memory, prob);
-    //rho_mode_detection(n, prob);
-/*
-    mpz_t start, seed, inner_flavor;
-    mpz_inits(start, seed, inner_flavor, NULL);
+    //pcsPcsModeDetection(n, memory, prob);
+    //pcsRhoModeDetection(n, memory, prob);
+    //rhoModeDetection(n, prob);
 
-    int counter = 0;
-    int nb_collisions = 10000;
+    FILE *fptr1;
+    FILE *fptr2;
 
-    gmp_randstate_t r_state;
-    gmp_randinit_default(r_state);
-    gmp_randseed_ui(r_state, time(NULL));
+    fptr1 = fopen("\\benchmarksPCS.txt","a");
+    fptr2 = fopen("\\benchmarksRho.txt","a");
 
-    mpz_urandomb(start, r_state, n);
-    mpz_urandomb(inner_flavor, r_state, n);
-
-    mpz_t *collisions = malloc( sizeof(mpz_t) * nb_collisions);
-    for (int i = 0; i < nb_collisions; ++i) {
-        mpz_init(collisions[i]);
+    if(fptr1 == NULL || fptr2 == NULL) {
+        printf("Error!");
+        exit(1);
     }
-    Table_t *inner_table = struct_init(n, memory);
-    pcs_init(n, prob, 9, inner_flavor);
 
-    mpz_set_ui(seed, time(NULL));
-    init_seed(seed);
+    clock_t start_time;
+    double elapsed_time;
+    int flag, nb_tests = 1;
 
-    pcs_run(inner_table, start, nb_collisions, collisions);
-    for (int i = 0; i <nb_collisions; ++i) {
-        printf("%d: %lu \n", i, mpz_get_ui(collisions[i]));
-        if (mpz_cmp_ui(collisions[i], 1) == 0) counter++;
+    for (int i = 0; i < nb_tests; ++i) {
+
+        start_time = clock();
+
+        flag = pcsPcsModeDetection(n, memory, prob);
+
+        elapsed_time = (double)(clock() - start_time) / CLOCKS_PER_SEC;
+        printf("PCS done in %f seconds\n", elapsed_time);
+        fprintf(fptr1,"%f : %d \n",elapsed_time, flag);
+
+        start_time = clock();
+
+        flag = pcsRhoModeDetection(n, memory, prob);
+
+        elapsed_time = (double)(clock() - start_time) / CLOCKS_PER_SEC;
+        printf("Rho done in %f seconds\n", elapsed_time);
+        fprintf(fptr2,"%f : %d \n",elapsed_time, flag);
     }
-    printf("%d", counter);
-    clear_table(inner_table);
-    pcs_clear();
 
-    free(collisions);
-    mpz_clears(start, seed, inner_flavor, NULL);
-*/
+    fclose(fptr1);
+    fclose(fptr2);
+
     return 0;
 }

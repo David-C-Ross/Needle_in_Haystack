@@ -11,7 +11,6 @@
 static uint8_t nb_bits;
 static uint8_t trailling_bits;
 static mpz_t flavor;
-static gmp_randstate_t r_state;
 
 /** Determines whether a point is a distinguished one.
  *
@@ -19,7 +18,8 @@ static gmp_randstate_t r_state;
  *  @param[in]	trailling_bits  Number of trailing zero bits.
  *  @return 	1 if the point is distinguished, 0 otherwise.
  */
-int is_distinguished(mpz_t point) {
+int isDistinguished(mpz_t point) {
+
     int res;
     mpz_t r;
     mpz_init(r);
@@ -29,14 +29,15 @@ int is_distinguished(mpz_t point) {
     return (res);
 }
 
-int get_distinguished(mpz_t point, mpz_t dist) {
+int getDistinguished(mpz_t point, mpz_t dist, gmp_randstate_t r_state) {
+
     int trail_length = 0;
-    int trail_length_max = pow(2, trailling_bits) * 10;
+    int trail_length_max = (int) pow(2, trailling_bits) * 15;
     mpz_t x;
 
     mpz_init_set(x, point);
 
-    while (!is_distinguished(x)) {
+    while (!isDistinguished(x)) {
         f(x, flavor);
         trail_length++;
 
@@ -47,15 +48,17 @@ int get_distinguished(mpz_t point, mpz_t dist) {
             trail_length = 0;
         }
     }
+    //printf("distinguished point %lu \n", mpz_get_ui(x));
     mpz_set(dist, x);
     mpz_clear(x);
     return trail_length;
 }
 
-/** Checks if there is a collision and returns the image.
+/** Checks if there is a findCollision and returns the image.
  *
  */
-int is_collision(mpz_t collision, mpz_t a1, mpz_t a2, int length1, int length2) {
+int findCollision(mpz_t collision, mpz_t a1, mpz_t a2, int length1, int length2) {
+
     mpz_t xDist_;
     mpz_t b1, b2;
     mpz_t pre1, pre2;
@@ -91,7 +94,7 @@ int is_collision(mpz_t collision, mpz_t a1, mpz_t a2, int length1, int length2) 
         mpz_set(collision, b1);
         retval = 1;
 
-        //printf("f(%lu) = f(%lu) = %lu \n", mpz_get_ui(pre1), mpz_get_ui(pre2), mpz_get_ui(collision));
+        //printf("f(%lu) = f(%lu) = %lu \n", mpz_get_ui(pre1), mpz_get_ui(pre2), mpz_get_ui(findCollision));
     }
     mpz_clears(b1, b2, xDist_, pre1, pre2, NULL);
     return retval;
@@ -100,63 +103,51 @@ int is_collision(mpz_t collision, mpz_t a1, mpz_t a2, int length1, int length2) 
 /** Initialize all variables needed to do a PCS algorithm.
  *
  */
-void pcs_init(uint8_t n_init, uint8_t prob_init, uint8_t trailling_bits_init, mpz_t flavor_init) {
+void pcsInit(uint8_t n_init, uint8_t trailling_bits_init) {
+
     nb_bits = n_init;
     trailling_bits = trailling_bits_init;
-
-    init_f(nb_bits, prob_init);
-    mpz_init_set(flavor, flavor_init);
-
-    gmp_randinit_default(r_state);
 }
 
 /** Run the PCS algorithm.
  *
  */
-void pcs_run(Table_t *table, mpz_t start_point, int nb_collisions, mpz_t *collisions) {
+void pcsRun(Table_t *table, mpz_t flavor_init, int nb_collisions, gmp_randstate_t r_state, mpz_t *collisions) {
+
     mpz_t a, a2;
     mpz_t dist, collision;
     char xDist_str[50];
 
-    int trail_length1, trail_length2;
-    int collision_count = 0;
+    int trail_length1, trail_length2, i = 0;
 
     mpz_inits(a, a2, dist, collision, NULL);
-    //Initialize a starting point
-    mpz_set(a, start_point);
+    mpz_init_set(flavor, flavor_init);
 
-    while (collision_count < nb_collisions) {
-        trail_length1 = get_distinguished(a, dist);
+    while(i < nb_collisions) {
+        //Initialize a starting point
+        mpz_urandomb(a, r_state, nb_bits);
 
+        trail_length1 = getDistinguished(a, dist, r_state);
         //mpz_fdiv_q_2exp(dist, dist, trailing_bits);
-        trail_length2 = struct_add(table, a2, a, dist, trail_length1, xDist_str);
+        trail_length2 = structAdd(table, a2, a, dist, trail_length1, xDist_str);
         if (trail_length2) {
-            if (is_collision(collision, a, a2, trail_length1, trail_length2)) {
-                mpz_set(collisions[collision_count], collision);
-                collision_count++;
+            if (findCollision(collision, a, a2, trail_length1, trail_length2)) {
+                mpz_set(collisions[i], collision);
+                i++;
 
-                //printf("collision found!, %lu \n", mpz_get_ui(collision));
+                //printf("collision found!, %lu \n", mpz_get_ui(findCollision));
                 //printf("start point 1, %lu \n", mpz_get_ui(a));
                 //printf("start point 2, %lu \n", mpz_get_ui(a2));
             }
         }
-        mpz_urandomb(a, r_state, nb_bits);
     }
     mpz_clears(a, a2, collision, dist, NULL);
-}
-
-void init_seed(mpz_t seed_init) {
-    gmp_randseed(r_state, seed_init);
 }
 
 /** Free all variables used in the previous PCS run.
  *
  */
-void pcs_clear() {
+void pcsClear() {
     mpz_clear(flavor);
-    gmp_randclear(r_state);
 }
 
-void clear_table(Table_t *table) {
-    struct_free(table);
-}

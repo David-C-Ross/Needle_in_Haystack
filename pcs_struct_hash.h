@@ -19,8 +19,8 @@ typedef struct Table
 
 }Table_t;
 
-Table_t *struct_init_hash(uint8_t n, uint8_t memory);
-int struct_add_hash(Table_t *table, mpz_t a_out, mpz_t a_in, int length, char xDist[]);
-void struct_free_hash(Table_t *table);
+Table_t *structInitHash(uint8_t memory);
+int structAddHash(Table_t *table, mpz_t a_out, mpz_t a_in, int length, char xDist[]);
+void structFreeHash(Table_t *table);
 
 #endif

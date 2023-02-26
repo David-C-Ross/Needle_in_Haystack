@@ -1,27 +1,17 @@
 #include <math.h>
-#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include "pcs_struct_hash.h"
 
 static unsigned int table_size;
 
-/** Calculate the hash table recommended size.
- *
- *	@brief The recommended size corresponds to the expected number
- *	of stored points.
- *
- */
-void set_table_size(uint8_t memory) {
-    table_size = pow(2, memory);
-}
-
 /** Initialize the hash table and allocate memory.
  *
  */
-Table_t *struct_init_hash(uint8_t n, uint8_t memory) {
+Table_t *structInitHash(uint8_t memory) {
+
     unsigned int i;
-    set_table_size(memory);
+    table_size = (int) pow(2, memory);
 
     //printf("\t\ttable_size: %lu\n",table_size);
     Table_t *table = malloc(sizeof(Table_t));
@@ -38,8 +28,8 @@ Table_t *struct_init_hash(uint8_t n, uint8_t memory) {
     return table;
 }
 
-int struct_add_hash(Table_t *table, mpz_t a_out, mpz_t a_in, int length, char xDist[]) {
-    unsigned int i = 0;
+int structAddHash(Table_t *table, mpz_t a_out, mpz_t a_in, int length, char xDist[]) {
+    unsigned int i;
     hashUNIX_t *new;
     hashUNIX_t *next;
     int retval = 0;
@@ -47,7 +37,7 @@ int struct_add_hash(Table_t *table, mpz_t a_out, mpz_t a_in, int length, char xD
     for (i = 0; i < table_size; ++i) {
         next = table->array[i];
 
-        if (next != NULL && next->key != NULL && strcmp(xDist, next->key) == 0) //collision
+        if (next != NULL && next->key != NULL && strcmp(xDist, next->key) == 0) //findCollision
         {
             retval = next->length;
             mpz_set_str(a_out, next->start, 62);
@@ -80,7 +70,7 @@ int struct_add_hash(Table_t *table, mpz_t a_out, mpz_t a_in, int length, char xD
     return retval;
 }
 
-void struct_free_hash(Table_t *table) {
+void structFreeHash(Table_t *table) {
     unsigned int i;
     for (i = 0; i < table_size; i++) {
         if (table->array[i] != NULL) {
