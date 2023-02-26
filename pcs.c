@@ -141,13 +141,5 @@ void pcsRun(Table_t *table, mpz_t flavor_init, int nb_collisions, gmp_randstate_
             }
         }
     }
-    mpz_clears(a, a2, collision, dist, NULL);
+    mpz_clears(a, a2, collision, dist, flavor, NULL);
 }
-
-/** Free all variables used in the previous PCS run.
- *
- */
-void pcsClear() {
-    mpz_clear(flavor);
-}
-

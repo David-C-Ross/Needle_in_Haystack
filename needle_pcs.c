@@ -172,7 +172,7 @@ int pcsPcsModeDetection(uint8_t n, uint8_t memory_init, uint8_t prob_init) {
     }
 
     mpz_t start1, start2, collision, distCollision;
-    mpz_inits(start1, start2, collision, distCollision, inner_flavor, outer_flavor, NULL);
+    mpz_inits(start1, start2, collision, distCollision, outer_flavor, NULL);
 
     gmp_randinit_default(r_state);
     gmp_randseed_ui(r_state, time(NULL));
@@ -189,8 +189,6 @@ int pcsPcsModeDetection(uint8_t n, uint8_t memory_init, uint8_t prob_init) {
         outer_table = structInitHash(memory);
         // create random outer_flavor
         mpz_urandomb(outer_flavor, r_state, nb_bits);
-        // create random inner_flavor
-        mpz_urandomb(inner_flavor, r_state, nb_bits);
         // find O(M) collisions which are also distinguished points
         for (int i = 0; i < nb_collisions; ++i) {
 
@@ -201,7 +199,7 @@ int pcsPcsModeDetection(uint8_t n, uint8_t memory_init, uint8_t prob_init) {
             inner_table = struct_init(memory);
 
             do {
-                pcsRun(inner_table, inner_flavor, 1, r_state_pcs1, &collision);
+                pcsRun(inner_table, outer_flavor, 1, r_state_pcs1, &collision);
                 //printf("collision found!, %lu \n", mpz_get_ui(collision));
                 trail_length1++;
 
@@ -246,7 +244,6 @@ int pcsPcsModeDetection(uint8_t n, uint8_t memory_init, uint8_t prob_init) {
     gmp_randclear(r_state_pcs2);
 
     structFree(outer_table);
-    pcsClear();
 
     return flag;
 }
@@ -339,7 +336,6 @@ int pcsRhoModeDetection(uint8_t n, uint8_t memory_init, uint8_t prob_init) {
     gmp_randclear(r_state);
 
     structFree(outer_table);
-    pcsClear();
 
     return flag;
 }

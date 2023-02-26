@@ -10,12 +10,12 @@
 
 int main() {
     // the needle will appear 2^5=32 times, hash has been checked to not contain any other needles of similar magnitude.
-    uint8_t n = 26, memory = 5, prob = 20;
+    uint8_t n = 20, memory = 5, prob = 15;
 
     //pcsPcsModeDetection(n, memory, prob);
     //pcsRhoModeDetection(n, memory, prob);
     //rhoModeDetection(n, prob);
-
+/*
     FILE *fptr1;
     FILE *fptr2;
 
@@ -52,6 +52,6 @@ int main() {
 
     fclose(fptr1);
     fclose(fptr2);
-
+*/
     return 0;
 }
