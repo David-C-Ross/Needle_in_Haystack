@@ -10,17 +10,17 @@
 
 int main() {
     // the needle will appear 2^5=32 times, hash has been checked to not contain any other needles of similar magnitude.
-    uint8_t n = 20, memory = 5, prob = 15;
+    uint8_t n = 20, memory = 5, prob = 12;
 
     //pcsPcsModeDetection(n, memory, prob);
     //pcsRhoModeDetection(n, memory, prob);
     //rhoModeDetection(n, prob);
-/*
+
     FILE *fptr1;
     FILE *fptr2;
 
-    fptr1 = fopen("\\benchmarksPCS.txt","a");
-    fptr2 = fopen("\\benchmarksRho.txt","a");
+    fptr1 = fopen("benchmarksPCS.txt","a");
+    fptr2 = fopen("benchmarksRho.txt","a");
 
     if(fptr1 == NULL || fptr2 == NULL) {
         printf("Error!");
@@ -29,7 +29,7 @@ int main() {
 
     clock_t start_time;
     double elapsed_time;
-    int flag, nb_tests = 1;
+    int flag, nb_tests = 100;
 
     for (int i = 0; i < nb_tests; ++i) {
 
@@ -52,6 +52,6 @@ int main() {
 
     fclose(fptr1);
     fclose(fptr2);
-*/
+
     return 0;
 }

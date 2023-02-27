@@ -48,14 +48,14 @@ int collisionPcs(mpz_t distCollision, mpz_t a1, mpz_t a2, int length1, int lengt
         length1--;
     }
     while (length2 > length1) {
-        pcsRun(inner_table1, outer_flavor, 1, r_state_pcs2, &b2);
+        pcsRun(inner_table2, outer_flavor, 1, r_state_pcs2, &b2);
         length2--;
     }
     if (mpz_cmp(b1, b2) != 0) {
         while (mpz_cmp(b1, b2) != 0) {
             pcsRun(inner_table1, outer_flavor, 1, r_state_pcs1, &b1);
 
-            pcsRun(inner_table1, outer_flavor, 1, r_state_pcs2, &b2);
+            pcsRun(inner_table2, outer_flavor, 1, r_state_pcs2, &b2);
         }
         mpz_set(distCollision, b1);
         retval = 1;
