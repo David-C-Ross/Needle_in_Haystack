@@ -4,7 +4,7 @@
 /** Initialize the distinguished-point-storing structure.
  * 
  */
-Table_t *struct_init(uint8_t memory)
+Table_t *structInit(uint8_t memory)
 {
     return structInitHash(memory);
 }

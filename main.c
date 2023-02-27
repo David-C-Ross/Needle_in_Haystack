@@ -10,7 +10,7 @@
 
 int main() {
     // the needle will appear 2^5=32 times, hash has been checked to not contain any other needles of similar magnitude.
-    uint8_t n = 20, memory = 5, prob = 12;
+    uint8_t n = 24, memory = 6, prob = 18;
 
     //pcsPcsModeDetection(n, memory, prob);
     //pcsRhoModeDetection(n, memory, prob);
@@ -40,6 +40,7 @@ int main() {
         elapsed_time = (double)(clock() - start_time) / CLOCKS_PER_SEC;
         printf("PCS done in %f seconds\n", elapsed_time);
         fprintf(fptr1,"%f : %d \n",elapsed_time, flag);
+        fflush(fptr1);
 
         start_time = clock();
 
@@ -48,6 +49,7 @@ int main() {
         elapsed_time = (double)(clock() - start_time) / CLOCKS_PER_SEC;
         printf("Rho done in %f seconds\n", elapsed_time);
         fprintf(fptr2,"%f : %d \n",elapsed_time, flag);
+        fflush(fptr2);
     }
 
     fclose(fptr1);

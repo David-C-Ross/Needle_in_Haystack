@@ -1,14 +1,31 @@
 #include <stdlib.h> /* exit */
+#include "stdio.h"
 #include <inttypes.h>
 #include <gmp.h>
 #include <time.h>
+#include <assert.h>
 
 static uint8_t nb_bits;
 static uint8_t prob;
 static uint32_t table_size;
 
-uint32_t jenkins(uint32_t a)
-{
+unsigned long getSeed() {
+
+    FILE *istream = fopen("/dev/urandom", "rb");
+    assert(istream);
+    unsigned long seed = 0;
+    for (unsigned i = 0; i < sizeof seed; i++) {
+        seed *= (UCHAR_MAX + 1);
+        int ch = fgetc(istream);
+        assert(ch != EOF);
+        seed += (unsigned) ch;
+    }
+    fclose(istream);
+    return seed;
+}
+
+uint32_t jenkins(uint32_t a) {
+
     a = (a+0x7ed55d16) + (a<<12);
     a = (a^0xc761c23c) ^ (a>>19);
     a = (a+0x165667b1) + (a<<5);
@@ -18,8 +35,8 @@ uint32_t jenkins(uint32_t a)
     return a;
 }
 
-uint32_t hashInt(uint32_t a)
-{
+uint32_t hashInt(uint32_t a) {
+
     a += ~(a<<15);
     a ^=  (a>>10);
     a +=  (a<<3);

@@ -1,5 +1,6 @@
 #include <inttypes.h>
 
+unsigned long getSeed();
 uint32_t jenkins(uint32_t a);
 uint32_t hashInt(uint32_t a);
 void f(mpz_t point, mpz_t flavor);
